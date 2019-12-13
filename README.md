@@ -38,22 +38,93 @@ Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.4+10-LTS, mixed mode)
 # Validate Applications is up
 
 
-## Create client app and test user in Keycloak
-Once in Keycloak create the sgateway client and with client secret value: secret
-
-Create also a test user
-
 ## Test the Application
 
-The endpoint sgate/test1 is configured in the proxy to resolve to http://gateway:8280/test1 which in the Api-Gateway will resolve to
-http://hello-service/hello
+The following are the 4 endpoints I tested:
 
-However, the Api-Gateway is a protected Client by the IDP which can be configured to be Okta or KeyCloak in the Api-Gateway application.yml file through the declartive yaml node spring.profiles.include with values:  okta, gateway-routes or keycloak, gateway-routes
-As a result for the above request the user will get redirected to the IDP for the completion of Authentication.
-Once the user is logged in, the user will get redirected to the original request which will eventually get full filled by the hello-service.
-As the request gets routed to the hello-service the Identity is propagated down to the service by the Api Gateway via the Bearer-Token.
+```url
+http://localhost:8280/test
+```
 
-The reponse should be:
+response:
+
+```txt
+404 - Not Found
+```
+
+logs show:
+
+```txt
+2019-12-12 20:26:27.013 TRACE 44696 --- [ctor-http-nio-2] o.s.w.s.adapter.HttpWebHandlerAdapter    : [2c107ac2] HTTP GET "/test", headers={masked}
+2019-12-12 20:26:27.013  INFO 44696 --- [ctor-http-nio-2] c.e.l.server.filter.LoggingWebFilter     : *** Request /test called ***
+2019-12-12 20:26:27.178 TRACE 44696 --- [ctor-http-nio-2] o.s.w.s.adapter.HttpWebHandlerAdapter    : [2c107ac2] Completed 404 NOT_FOUND, headers={masked}
+2019-12-12 20:26:27.178 TRACE 44696 --- [ctor-http-nio-2] org.springframework.web.HttpLogging      : [2c107ac2] Handling completed
+```
+```url
+http://localhost:8280/foo/
+```
+
+response:
+
+```txt
+404 - Not Found
+```
+
+logs show:
+```txt
+2019-12-12 20:29:23.631 TRACE 44696 --- [ctor-http-nio-2] o.s.w.s.adapter.HttpWebHandlerAdapter    : [2c107ac2] HTTP GET "/foo/", headers={masked}
+2019-12-12 20:29:23.632  INFO 44696 --- [ctor-http-nio-2] c.e.l.server.filter.LoggingWebFilter     : *** Request /foo/ called ***
+2019-12-12 20:29:23.710 TRACE 44696 --- [ctor-http-nio-2] o.s.w.s.adapter.HttpWebHandlerAdapter    : [2c107ac2] Completed 404 NOT_FOUND, headers={masked}
+2019-12-12 20:29:23.711 TRACE 44696 --- [ctor-http-nio-2] org.springframework.web.HttpLogging      : [2c107ac2] Handling completed
+```
+```url
+http://localhost:8280/foo
 ```
 
 ```
+Whitelabel Error Page
+This application has no configured error view, so you are seeing this as a fallback.
+
+Thu Dec 12 20:30:48 CST 2019
+[2c107ac2] There was an unexpected error (type=Internal Server Error, status=500).
+The path does not have a leading slash.
+java.lang.IllegalArgumentException: The path does not have a leading slash.
+	at org.springframework.util.Assert.isTrue(Assert.java:118)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
+Error has been observed at the following site(s):
+	|_ checkpoint ⇢ com.example.library.server.filter.LoggingWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ org.springframework.boot.actuate.metrics.web.reactive.server.MetricsWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ HTTP GET "/foo" [ExceptionHandlingWebHandler]
+Stack trace:
+```
+```url
+http://localhost:8280/actuator/
+```
+
+response:
+```json
+{"_links":{"self":{"href":"http://localhost:8280/actuator","templated":false},"gateway":{"href":"http://localhost:8280/actuator/gateway","templated":false}}}
+```
+
+going to
+http://localhost:8280/actuator/gateway
+
+
+response:
+```txt
+Whitelabel Error Page
+This application has no configured error view, so you are seeing this as a fallback.
+
+Thu Dec 12 20:25:51 CST 2019
+[2c107ac2] There was an unexpected error (type=Not Found, status=404).
+org.springframework.web.server.ResponseStatusException: 404 NOT_FOUND
+	at org.springframework.web.reactive.resource.ResourceWebHandler.lambda$handle$0(ResourceWebHandler.java:325)
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
+Error has been observed at the following site(s):
+	|_ checkpoint ⇢ com.example.library.server.filter.LoggingWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ org.springframework.boot.actuate.metrics.web.reactive.server.MetricsWebFilter [DefaultWebFilterChain]
+	|_ checkpoint ⇢ HTTP GET "/actuator/gateway" [ExceptionHandlingWebHandler]
+```
+
