@@ -1,0 +1,6 @@
+server:
+  port: ${PORT:8280}
+
+spring:
+  profiles:
+    include: gateway-routes, logging, management, default

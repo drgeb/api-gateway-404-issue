@@ -1,0 +1,104 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url 'https://repo.spring.io/snapshot' }
+		maven { url 'https://repo.spring.io/milestone' }
+		gradlePluginPortal()
+	}
+    
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:${dependencyManagementPluginVersion}"
+        classpath "gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:${jibPluginVersion}"
+   }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.2.1.RELEASE' apply false
+    id 'com.google.cloud.tools.jib' version '1.8.0' apply false
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE' apply false
+}
+
+allprojects {
+
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.google.cloud.tools.jib'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://repo.spring.io/snapshot' }
+        maven { url 'https://repo.spring.io/milestone' }
+        gradlePluginPortal()
+    }
+
+	sourceCompatibility = JavaVersion.VERSION_11
+
+    eclipse {
+        classpath {
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+
+    idea {
+        module {
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+
+    configurations {
+        developmentOnly
+        runtimeClasspath {
+            extendsFrom developmentOnly
+        }
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    } 
+
+    if(JavaVersion.current() >= JavaVersion.VERSION_11) {
+        dependencies {
+            compile 'javax.xml.bind:jaxb-api:2.3.0'
+            compile 'com.sun.xml.bind:jaxb-core:2.3.0'
+            compile 'com.sun.xml.bind:jaxb-impl:2.3.0'
+            compile 'javax.activation:javax.activation-api:1.2.0'
+            testImplementation('org.springframework.boot:spring-boot-starter-test') {
+                exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+            }
+            testImplementation 'org.springframework.security:spring-security-test'
+        }
+}
+
+	dependencyManagement {
+		imports {
+			mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+			mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+			mavenBom "de.codecentric:spring-boot-admin-dependencies:${springBootAdminVersion}"
+		}
+	}
+
+    dependencies {
+    	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    	implementation 'de.codecentric:spring-boot-admin-starter-client:2.1.6'
+    	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+	    	exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	    }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}

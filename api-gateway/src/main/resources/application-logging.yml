@@ -1,0 +1,8 @@
+logging:
+#  file: spring_app_log_file.log
+#  pattern.file: "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%F:%L - %m%n"
+  level:
+    root: INFO
+    org.springframework.web: TRACE
+#    org.springframework.cloud.gateway: DEBUG
+#    org.springframework.boot.autoconfigure: DEBUG

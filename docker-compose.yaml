@@ -1,0 +1,11 @@
+version: '3'
+services:
+  api-gateway:
+    container_name: gateway 
+    restart: always
+    image: api-gateway:latest
+    ports:
+      - 8280:8280
+    expose:
+      - "8280"
+    command: gradle clean build jibDockerBuild

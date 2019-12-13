@@ -1,0 +1,4 @@
+# SEE: https://cloud.spring.io/spring-cloud-gateway/multi/multi__actuator_api.html
+management:
+  endpoint.gateway.enabled: true # default value
+  endpoints.web.exposure.include: gateway
